@@ -14,6 +14,9 @@ APP_DIR = Path(__file__).resolve().parent
 DATA_DIR = APP_DIR.parent / "data"
 MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 FRONTEND_ORIGINS = [
+    "https://aerchain-quote-intelligence.vercel.app",
+    "https://aerchain-quote-intelligence-git-main-mukesh1140343s-projects.vercel.app",
+    "https://aerchain-quote-intelligence-r96w1otj-mukesh1140343s-projects.vercel.app",
     "https://aerchain.netlify.app",
     "https://magenta-cat-044395.netlify.app",
 ]
