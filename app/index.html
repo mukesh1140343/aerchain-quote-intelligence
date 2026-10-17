@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aerchain | Quote Intelligence</title>
+<style>
+:root{--ink:#182230;--muted:#64748b;--line:#e2e8f0;--bg:#f6f8fb;--blue:#1d4ed8;--nav:#14243a;--green:#067647;--amber:#b54708;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink)}
+header{background:var(--nav);color:white;padding:18px 28px;display:flex;justify-content:space-between;align-items:center}
+.brand{font-size:18px;font-weight:750;letter-spacing:.2px}.sub{color:#cbd5e1;font-size:12px;margin-top:2px}
+main{max-width:1440px;margin:auto;padding:22px}.crumb{font-size:12px;color:var(--muted);margin-bottom:12px}
+h1{font-size:25px;margin:0 0 5px}.desc{color:var(--muted);margin-bottom:20px}
+.pill{border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;background:#eff6ff;color:#1d4ed8;display:inline-block}
+.warning{background:#fffaeb;border:1px solid #fedf89;color:#93370d;padding:11px 13px;border-radius:10px;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}.stat,.panel{background:white;border:1px solid var(--line);border-radius:12px;padding:16px}
+.stat .label{font-size:12px;color:var(--muted)}.stat .value{font-size:24px;font-weight:750;margin-top:4px}.stat .foot{font-size:11px;color:var(--muted);margin-top:2px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px}.panel h2{font-size:15px;margin:0 0 12px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}input,select,button,textarea{font:inherit;border:1px solid #cbd5e1;border-radius:8px;padding:9px;background:white;color:var(--ink)}input{min-width:190px;flex:1}button{cursor:pointer;font-weight:650}button.primary{background:var(--blue);color:white;border-color:var(--blue)}button:disabled{opacity:.5;cursor:not-allowed}
+table{border-collapse:collapse;width:100%;font-size:12px}th{text-align:left;background:#f8fafc;color:#475569;font-weight:700;white-space:nowrap}td,th{padding:10px 9px;border-bottom:1px solid var(--line)}td.num{text-align:right;font-variant-numeric:tabular-nums}.tablewrap{overflow:auto;max-height:540px}
+.status{font-size:11px;border-radius:5px;padding:3px 6px;white-space:nowrap}.ok{background:#ecfdf3;color:var(--green)}.bad{background:#fef3f2;color:var(--red)}.warn{background:#fffaeb;color:var(--amber)}
+.vendorlist{display:grid;gap:8px}.vendor{padding:10px;border:1px solid var(--line);border-radius:8px}.vendor strong{display:block}.vendor small{color:var(--muted)}
+.questions{display:grid;gap:7px;margin:10px 0}.qbtn{text-align:left;font-size:12px;font-weight:500;background:#f8fafc}.chatbox{background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:11px;min-height:145px;white-space:pre-wrap;font-size:12px;color:#334155}
+textarea{width:100%;min-height:75px;resize:vertical}.small{font-size:11px;color:var(--muted)}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+@media(max-width:980px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){main{padding:12px}header{padding:14px}.stats{grid-template-columns:1fr 1fr}.stat .value{font-size:20px}}
+</style></head><body>
+<header><div><div class="brand">aerchain <span style="font-weight:400;color:#93c5fd">/ Quote Intelligence</span></div><div class="sub">Procurement workspace · AER-RFX-2026-014</div></div><span class="pill">PROTOTYPE</span></header>
+<main>
+<div class="crumb">Procurement / RFx / AER-RFX-2026-014 / Bid analysis</div>
+<h1>Corrugated packaging — bid comparison</h1><div class="desc">30 line items · 5 suppliers · Response analysis and award scenario</div>
+<div class="warning"><strong>Demo data:</strong> Supplier names and prices are synthetic. USD/INR, unit conversions, freight, and discounts must be confirmed before any real award. This screen is an interactive prototype, not a production procurement system.</div>
+<div class="stats">
+<div class="stat"><div class="label">RFx line items</div><div class="value">30</div><div class="foot">Packaging specifications</div></div>
+<div class="stat"><div class="label">Vendors invited</div><div class="value">5</div><div class="foot">Mixed response formats</div></div>
+<div class="stat"><div class="label">Quality questionnaire</div><div class="value">4 / 5</div><div class="foot">Synthetic sample outcome</div></div>
+<div class="stat"><div class="label">Needs buyer review</div><div class="value" id="reviewCount">11</div><div class="foot">Missing lines or normalization risk</div></div>
+</div>
+<div class="layout"><section class="panel">
+<h2>Line-item comparison <span class="pill">150 vendor-line records</span></h2>
+<div class="filters"><input id="search" placeholder="Search item, line ID, vendor…"><select id="vendorFilter"><option value="">All vendors</option><option>NorthStar Packaging</option><option>PrimeCarton Industries</option><option>EcoBoard Solutions</option><option>GlobalPack Trading</option><option>RapidBox Works</option></select><select id="statusFilter"><option value="">All statuses</option><option value="quoted">Quoted</option><option value="missing">Missing quote</option><option value="review">Needs review</option></select><button id="exportBtn">Export CSV</button></div>
+<div class="tablewrap"><table><thead><tr><th>Line</th><th>Item</th><th>Vendor</th><th>Quoted unit</th><th class="num">Price</th><th>Currency</th><th>Status</th></tr></thead><tbody id="tbody"><tr><td colspan="7">Loading sample data…</td></tr></tbody></table></div>
+<div class="small" style="margin-top:10px">Prices shown as quoted, not normalized. Do not compare unlike units/currencies without approved assumptions.</div>
+</section>
+<aside style="display:grid;gap:16px;align-content:start">
+<section class="panel"><h2>Supplier overview</h2><div class="vendorlist" id="vendors"></div></section>
+<section class="panel"><h2>Ask the procurement analyst</h2><div class="small">For live AI answers, run the API and configure OPENAI_API_KEY. This UI will not invent answers when the model is unavailable.</div>
+<div class="questions"><button class="qbtn">Which line items have missing quotes?</button><button class="qbtn">Which bids cannot be compared safely yet, and why?</button><button class="qbtn">What should I verify before awarding this RFx?</button></div>
+<textarea id="question" placeholder="Ask about the bid data…"></textarea><div class="actions"><button class="primary" id="askBtn">Ask analyst</button><button id="clearBtn">Clear</button></div><div id="answer" class="chatbox" style="margin-top:10px">Analyst responses require a configured model API. Until then, inspect the source data and review flags; no demo answers are hardcoded.</div>
+</section></aside></div></main>
+<script>
+let records=[];
+const $=id=>document.getElementById(id);
+const money=(v)=>v===""||v===null||v===undefined?"—":Number(v).toLocaleString("en-IN",{maximumFractionDigits:2});
+function status(r){if(r.quoted!=="True"&&r.quoted!==true)return "missing";if(r.confidence==="low"||r.confidence==="medium"||r.notes)return "review";return "quoted"}
+function render(){
+ const s=$("search").value.toLowerCase(), vf=$("vendorFilter").value, sf=$("statusFilter").value;
+ const filtered=records.filter(r=>(!s||[r.line_item_id,r.description,r.vendor_name].join(" ").toLowerCase().includes(s))&&(!vf||r.vendor_name===vf)&&(!sf||status(r)===sf));
+ $("tbody").innerHTML=filtered.slice(0,250).map(r=>{let st=status(r);let label=st==="missing"?"Missing quote":st==="review"?"Needs review":"Quoted";let cls=st==="missing"?"bad":st==="review"?"warn":"ok";
+ return `<tr><td><strong>${r.line_item_id}</strong></td><td>${r.description}<div class="small">${r.specification||""}</div></td><td>${r.vendor_name}</td><td>${r.quoted_unit||"—"}</td><td class="num">${money(r.quoted_unit_price)}</td><td>${r.currency||"—"}</td><td><span class="status ${cls}">${label}</span></td></tr>`}).join("")||'<tr><td colspan="7">No records match these filters.</td></tr>';
+}
+function renderVendors(){
+ const names=[...new Set(records.map(r=>r.vendor_name))];
+ $("vendors").innerHTML=names.map(n=>{let rs=records.filter(r=>r.vendor_name===n),quoted=rs.filter(r=>r.quoted==="True"||r.quoted===true).length;let quality=rs[0]?.quality_questionnaire_pass==="True"||rs[0]?.quality_questionnaire_pass===true;
+ return `<div class="vendor"><strong>${n}</strong><small>${quoted}/30 line items quoted · ${quality?"Quality pass (sample)":"Quality fail (sample)"}</small><div style="height:5px;background:#e2e8f0;border-radius:5px;margin-top:7px"><div style="height:5px;width:${quoted/30*100}%;background:#2563eb;border-radius:5px"></div></div></div>`}).join("");
+}
+async function load(){try{let r=await fetch("http://127.0.0.1:8000/sample-data");if(!r.ok)throw 0;records=await r.json();render();renderVendors();$("reviewCount").textContent=records.filter(r=>status(r)!=="quoted").length}catch(e){$("tbody").innerHTML='<tr><td colspan="7">API not connected. Start backend per README, then refresh.</td></tr>';}}
+["search","vendorFilter","statusFilter"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",render));
+document.querySelectorAll(".qbtn").forEach(b=>b.addEventListener("click",()=>{$("question").value=b.textContent}));
+$("clearBtn").onclick=()=>{$("question").value="";$("answer").textContent="Ask a question to analyze the current comparison data."};
+$("askBtn").onclick=async()=>{if(!$("question").value.trim())return; $("answer").textContent="Calling configured analyst…";try{let res=await fetch("http://127.0.0.1:8000/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:$("question").value,comparison_data:records,assumptions:{currency:"INR base currency not yet approved",fx_rate:"unconfirmed",unit_conversions:"unconfirmed",missing_quotes:"must not be treated as zero"}})});let data=await res.json();if(!res.ok)throw Error(data.detail||"Analyst unavailable");$("answer").textContent=data.answer}catch(e){$("answer").textContent="Analyst unavailable: "+e.message+". Configure OPENAI_API_KEY and restart the backend. No answer has been fabricated."}};
+$("exportBtn").onclick=()=>{let headers=Object.keys(records[0]||{});let csv=[headers.join(","),...records.map(r=>headers.map(h=>JSON.stringify(r[h]??"")).join(","))].join("\n");let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="aerchain_bid_comparison_demo.csv";a.click();URL.revokeObjectURL(a.href)};
+load();
+</script></body></html>
