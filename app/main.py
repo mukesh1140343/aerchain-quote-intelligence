@@ -94,3 +94,52 @@ def compact_rows(rows: list[dict[str, Any]], question: str, max_chars: int = 780
     ordered = priority + [r for r in rows if r not in priority]
     result, used = [], 0
     for row in ordered:
+        item = {k: row.get(k) for k in fields if k in row}
+        encoded = json.dumps(item, ensure_ascii=False, separators=(",", ":"))
+        if used + len(encoded) > max_chars: continue
+        result.append(item); used += len(encoded) + 1
+        if len(result) >= 55: break
+    return result, max(0, len(rows) - len(result))
+
+@app.get("/")
+def root():
+    return {"service": "Aerchain Quote Intelligence API", "status": "ok", "health": "/health", "sample_data": "/sample-data", "docs": "/docs"}
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "provider": "Groq", "model": MODEL, "api_key_configured": bool(os.getenv("GROQ_API_KEY"))}
+
+@app.get("/sample-data")
+def sample_data():
+    path = DATA_DIR / "vendor_quotes_150_rows.csv"
+    if not path.exists():
+        raise HTTPException(500, f"Sample data file not found at {path}. Check Render Root Directory and repository files.")
+    with open(path, newline="", encoding="utf-8-sig") as f:
+        return list(csv.DictReader(f))
+
+@app.post("/analyze")
+def analyze(req: AnalystRequest):
+    if not req.question.strip(): raise HTTPException(422, "Please provide a question.")
+    rows, omitted = compact_rows(req.comparison_data, req.question)
+    system = ("You are a cautious enterprise procurement analyst. Answer in clear Markdown using only the supplied data and buyer assumptions. Never invent quotes or treat missing prices as zero. Distinguish facts from assumptions. Do not claim currency/unit normalization has occurred unless the data proves it. Cite vendor names and line item IDs where possible. Do not decide the award; explain trade-offs. The supplied records may be a subset, so do not claim you reviewed omitted records.")
+    prompt = f"QUESTION:\n{req.question}\n\nBUYER ASSUMPTIONS:\n{json.dumps(req.assumptions, ensure_ascii=False)}\n\nCOMPARISON DATA ({len(rows)} rows supplied):\n{json.dumps(rows, ensure_ascii=False, separators=(',', ':'))}\n\nIf data is insufficient for a definitive answer, state what must be checked."
+    answer = ask_model(system, prompt, 1500)
+    return {"answer": answer, "model": MODEL, "rows_received": len(req.comparison_data), "rows_analyzed": len(rows), "rows_omitted": omitted}
+
+@app.post("/extract")
+async def extract(file: UploadFile = File(...)):
+    filename = file.filename or "upload.txt"
+    source = read_upload(filename, await file.read())
+    if not source.strip(): raise HTTPException(422, "No readable text found in the uploaded file.")
+    source = source[:12000]
+    schema = {"vendor_name": "string|null", "currency": "string|null", "validity_days": "number|null", "payment_terms": "string|null", "freight_policy": "string|null", "discount_policy": "string|null", "line_items": [{"line_item_id": "string|null", "description": "string", "quoted_quantity": "number|null", "quoted_unit": "string|null", "unit_price": "number|null", "currency": "string|null", "lead_time_days": "number|null", "notes": "string|null", "evidence_quote": "string", "confidence": "high|medium|low"}], "unresolved_questions": ["string"]}
+    prompt = f"Extract only facts present in this procurement quote. Never infer missing prices, quantities, units, or terms. Use null for unknown values, include a short evidence quote for each line item, and mark ambiguous values low confidence. Return JSON only matching this schema:\n{json.dumps(schema)}\n\nFILE: {filename}\nSOURCE:\n{source}"
+    answer = ask_model("You accurately extract procurement quote data. Return one valid JSON object only, without Markdown fences.", prompt, 1800)
+    try:
+        result = json.loads(answer.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip())
+    except Exception:
+        raise HTTPException(502, "The AI model did not return valid JSON. Please retry.")
+    result["_source_file"] = filename
+    result["_extraction_model"] = MODEL
+    result["_note"] = "Verify extracted values against source evidence before procurement use."
+    return result
