@@ -13,11 +13,14 @@ from pypdf import PdfReader
 APP_DIR = Path(__file__).resolve().parent
 DATA_DIR = APP_DIR.parent / "data"
 MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
-FRONTEND_ORIGIN = "https://magenta-cat-044395.netlify.app"
+FRONTEND_ORIGINS = [
+    "https://aerchain.netlify.app",
+    "https://magenta-cat-044395.netlify.app",
+]
 app = FastAPI(title="Aerchain Quote Intelligence API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_ORIGIN, "http://localhost:5173", "http://127.0.0.1:5173", "null"],
+    allow_origins=FRONTEND_ORIGINS + ["http://localhost:5173", "http://127.0.0.1:5173", "null"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -91,6 +94,3 @@ def compact_rows(rows: list[dict[str, Any]], question: str, max_chars: int = 780
     ordered = priority + [r for r in rows if r not in priority]
     result, used = [], 0
     for row in ordered:
-        item = {k: row.get(k) for k in fields if k in row}
-        encoded = json.dumps(item, ensure_ascii=False, separators=(",", ":"))
-        if used + len(encoded) > max_chars: continue
